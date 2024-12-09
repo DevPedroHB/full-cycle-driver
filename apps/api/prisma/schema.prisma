@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+type Coord {
+  lat Float
+  lng Float
+}
+
+type Place {
+  name     String
+  location Coord
+}
+
+model Route {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  source      Place
+  destination Place
+  distance    Float
+  duration    Float
+  directions  Json
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  routeDriver RouteDriver?
+
+  @@map("routes")
+}
+
+type Point {
+  location  Coord
+  createdAt DateTime @default(now()) @map("created_at")
+}
+
+model RouteDriver {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  points    Point[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  routeId   String   @unique @map("route_id") @db.ObjectId
+
+  route Route @relation(fields: [routeId], references: [id])
+
+  @@map("route_drivers")
+}
